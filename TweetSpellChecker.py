@@ -31,6 +31,11 @@ parser.add_argument('-destination',  help='Email the report shall be sent ',type
 
 
 def GenerateReport(tweetReportList):
+    '''
+    Given a list of tupple under the format (number_of_word,number_of_faults,grade,s.text)
+    indentify the best and worse tweet. At equivalent grade, prioryt is given to the
+    tweet with the longest text
+    '''
     
     #find the tweets with the best score
     maxScore = max(tweet[2] for tweet in tweetReportList)
@@ -63,6 +68,11 @@ def GenerateReport(tweetReportList):
            
     
 def print_report(report):
+    '''
+    Given a dictionary, return a text with each dictionary key turned in a lie
+    with the following format:
+    \tab-key : value
+    '''
     text = ''
     for keys,values in report.items():
         text = text + '\t-' + str(keys) + ' : '+ str(values) + '\n'
@@ -95,6 +105,7 @@ def  read_tweets(TweeterAPI,followedUser):
     '''
     Read tweets for the specified user name
     '''
+    statuses = None
     try:
         api = twitter.Api(consumer_key=config.get('TweeterAPI', 'consumer_key', 0),
                           consumer_secret=config.get('TweeterAPI', 'consumer_secret', 0),
@@ -121,29 +132,36 @@ if __name__ == '__main__':
         
     statuses = read_tweets(config,args.followedUser)
     
-    tweetReportList = list()
-    for s in statuses:
-        (number_of_word,number_of_faults,grade) = spellCheck.analyse_tweet(s.text)
-        tweetReportList.append((number_of_word,number_of_faults,grade,s.text))
-  
-    if len(tweetReportList)>10:
-        text = 'Latest tweets:\n'
-        latestReport = GenerateReport(tweetReportList[:len(tweetReportList)/2])
-        text = text+print_report(latestReport)
-        previousReport = GenerateReport(tweetReportList[len(tweetReportList)/2+1:])
-        text = text+'Previous tweets:\n'
-        text = text+print_report(previousReport)
-
-    else :
-        report = GenerateReport(tweetReportList)
-        text = 'Latest tweets:\n'
-        text = text+print_report(report)
+    if statuses is not None:  
+        tweetReportList = list()
+        for s in statuses:
+            (number_of_word,number_of_faults,grade) = spellCheck.analyse_tweet(s.text)
+            tweetReportList.append((number_of_word,number_of_faults,grade,s.text))
+      
+        if len(tweetReportList)>10:
+            text = 'Latest tweets:\n'
+            latestReport = GenerateReport(tweetReportList[:len(tweetReportList)/2])
+            text = text+print_report(latestReport)
+            previousReport = GenerateReport(tweetReportList[len(tweetReportList)/2+1:])
+            text = text+'Previous tweets:\n'
+            text = text+print_report(previousReport)
     
-    mail = ReportMailer.ReportMailer()
-    
-    mail.SendReport(config=config, 
-                    destinationEmail=args.destination,
-                    tweetAuthor=args.followedUser,
-                    text=text)
+        else :
+            report = GenerateReport(tweetReportList)
+            text = 'Latest tweets:\n'
+            text = text+print_report(report)
+        
+        mail = ReportMailer.ReportMailer()
+        
+        try: 
+            mail.SendReport(config=config, 
+                            destinationEmail=args.destination,
+                            tweetAuthor=args.followedUser,
+                            text=text)
+        except Exception as e:
+            print "Could not mail report to {} ({}): ".format(args.destination,e.message)
+   
+    else:
+        sys.exit('Could not read tweets')
     
     
