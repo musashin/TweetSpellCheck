@@ -4,6 +4,7 @@ Created on 2013-11-25
 @author: nicolas
 '''
 
+import sys
 import enchant
 import re
 
@@ -16,25 +17,39 @@ class SpellChecker(object):
         '''
         Constructor
         '''
-        self.dictionnary = enchant.Dict(language)
+        if enchant.dict_exists(language):
+            self.dictionnary = enchant.Dict(language)
+        else:
+            availableDicos = '[%s]' % ', '.join(map(str, enchant.list_languages()))                              
+            sys.exit("No dictionary installed for {}, the available dictionaries are: {}".format(language,availableDicos))
     
     def is_tweet_keyword(self,word):
-    
+        '''
+        Return True if it is a tweeter special word (@ or #a)
+        '''
         return re.search('@[\w]',word)!= None or re.search('#[\w]',word)!= None  
 
     def is_emoticon(self,word):
-    
+        '''
+        Return True if the word is an emoticon
+        '''
         return re.search('\s(\w+)\s((?::|;|=)(?:-)?(?:\)|D|P))',word) != None
 
     def is_URL(self,word):
-    
+        '''
+        Return True if the word is an URL
+        '''
         return re.search('http://(\w)*',word) != None
         
     def is_name(self,word):
+        '''
+        '''
         return word[0].isupper()
     
     def analyse_tweet(self,tweetText):
-        
+        '''
+        Analyze the tweet word by word and count spelling mistakes
+        '''
         number_of_word = 0
         number_of_faults = 0
         

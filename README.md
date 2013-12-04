@@ -3,6 +3,15 @@ TweetSpellCheck
 
 A simple script to analyse a tweeter feed for spelling mistakes, grade the tweet as a function of their quality and mail a report
 
+Prerequisites
+===============
+  * Python twitter (a wrapper for the python API installed from https://code.google.com/p/python-twitter/)
+  * pyEnchant for spellchecker (http://pythonhosted.org/pyenchant/):
+	* sudo apt-get install python-abiword
+	* https://pypi.python.org/pypi/pyenchant/1.6.5
+	* see http://pythonhosted.org/pyenchant/tutorial.html for installation details
+  * Whatever extra dictionary you might need (sudo apt-get install myspell-fr for installing french one on my distrib)
+
 Sample Call
 ===============
 Below are the argument for a 'sample' call.

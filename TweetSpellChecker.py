@@ -117,6 +117,7 @@ def  read_tweets(TweeterAPI,followedUser):
     
     try:
         statuses = api.GetUserTimeline(screen_name=followedUser,count=200)
+
     except Exception as e:
         print "Could not connect to retrieve status for user {} ({}): ".format(followedUser,e.message)
    
